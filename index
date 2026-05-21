@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Verb Trainer 🇬🇧</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fira+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f0f1a;--card:#1a1a2e;--card2:#16213e;--accent:#e94560;--accent2:#0f3460;
+    --green:#06d6a0;--yellow:#ffd166;--text:#e8e8f0;--muted:#888aaa;--border:#2a2a4a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  header{background:linear-gradient(135deg,#0f0f1a,#1a1a2e,#0f3460);padding:24px 20px 16px;text-align:center;border-bottom:2px solid var(--accent);}
+  header h1{font-size:1.8rem;font-weight:900;}header h1 span{color:var(--accent);}
+  header p{color:var(--muted);margin-top:4px;font-size:.9rem;}
+  .tabs{display:flex;background:var(--card2);border-bottom:1px solid var(--border);overflow-x:auto;}
+  .tab-btn{flex:1;min-width:120px;padding:13px 16px;background:none;border:none;color:var(--muted);font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;}
+  .tab-btn:hover{color:var(--text);}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(233,69,96,.05);}
+  .section{display:none;padding:20px 16px;max-width:860px;margin:0 auto;}
+  .section.active{display:block;}
+  .stats-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  .stat-chip{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:.82rem;font-weight:700;}
+  .stat-chip span{color:var(--accent);}
+  .stat-chip.g span{color:var(--green);}
+  .stat-chip.y span{color:var(--yellow);}
+  .progress-wrap{background:var(--card2);border-radius:99px;height:7px;margin-bottom:18px;overflow:hidden;}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),#ff6b9d);border-radius:99px;transition:width .4s;}
+  .verb-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:14px;animation:si .3s ease;}
+  @keyframes si{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .verb-label{font-size:.72rem;font-weight:800;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+  .verb-base{font-family:'Fira Mono',monospace;font-size:1.9rem;font-weight:700;color:var(--yellow);margin-bottom:3px;}
+  .verb-meaning{color:var(--muted);font-size:.88rem;margin-bottom:18px;}
+  .input-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .input-group{flex:1;min-width:150px;}
+  .input-group label{display:block;font-size:.72rem;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
+  .verb-input{width:100%;background:var(--card2);border:2px solid var(--border);border-radius:9px;padding:9px 13px;color:var(--text);font-family:'Fira Mono',monospace;font-size:.95rem;font-weight:700;outline:none;transition:border-color .2s;}
+  .verb-input:focus{border-color:var(--accent);}
+  .verb-input.correct{border-color:var(--green);background:rgba(6,214,160,.08);}
+  .verb-input.wrong{border-color:var(--accent);background:rgba(233,69,96,.08);}
+  .verb-input:disabled{opacity:.7;}
+  .feedback-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .answer-reveal{font-family:'Fira Mono',monospace;font-size:.82rem;padding:3px 10px;border-radius:5px;background:rgba(6,214,160,.12);color:var(--green);border:1px solid rgba(6,214,160,.3);}
+  .btn{padding:10px 20px;border:none;border-radius:9px;font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:#ff6b9d;transform:translateY(-1px);}
+  .btn-secondary{background:var(--card2);color:var(--text);border:1px solid var(--border);}
+  .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+  .mode-selector{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .mode-btn{padding:7px 16px;background:var(--card2);border:2px solid var(--border);border-radius:7px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;}
+  .mode-btn.active,.mode-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(233,69,96,.07);}
+  .result-box{background:var(--card);border:2px solid var(--green);border-radius:14px;padding:24px;text-align:center;margin-bottom:18px;animation:si .4s ease;display:none;}
+  .result-box.show{display:block;}
+  .result-score{font-size:2.8rem;font-weight:900;color:var(--green);}
+  .result-msg{color:var(--muted);margin-top:5px;}
+
+  /* ── IF CLAUSES ── */
+  .grammar-box{background:var(--card2);border:1px solid var(--border);border-radius:11px;padding:18px;margin-bottom:20px;font-size:.86rem;}
+  .grammar-box h3{font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  .grammar-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;flex-wrap:wrap;}
+  .grammar-badge{flex-shrink:0;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:4px;margin-top:2px;}
+  .grammar-text{color:var(--muted);}
+  .grammar-text code{font-family:'Fira Mono',monospace;color:var(--yellow);font-size:.8rem;}
+  .type0{background:rgba(255,209,102,.15);color:var(--yellow);border:1px solid rgba(255,209,102,.3);}
+  .type1{background:rgba(6,214,160,.12);color:var(--green);border:1px solid rgba(6,214,160,.3);}
+  .type2{background:rgba(100,149,237,.12);color:#6495ED;border:1px solid rgba(100,149,237,.3);}
+  .type3{background:rgba(233,69,96,.12);color:var(--accent);border:1px solid rgba(233,69,96,.3);}
+  .if-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;animation:si .3s ease;}
+  .if-type-badge{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:9px;}
+  .if-sentence{font-size:1rem;line-height:2;margin-bottom:10px;}
+  .blank-input{display:inline-block;background:var(--card2);border:2px solid var(--border);border-radius:5px;padding:1px 9px;font-family:'Fira Mono',monospace;font-size:.9rem;font-weight:700;color:var(--text);min-width:90px;outline:none;transition:border-color .2s;vertical-align:middle;}
+  .blank-input:focus{border-color:var(--accent);}
+  .blank-input.correct{border-color:var(--green);color:var(--green);}
+  .blank-input.wrong{border-color:var(--accent);color:var(--accent);}
+  .if-hint{font-size:.78rem;color:var(--muted);margin-top:3px;}
+  .if-answer-reveal{font-size:.83rem;color:var(--green);font-family:'Fira Mono',monospace;margin-top:6px;display:none;}
+
+  /* ── REFERENCE TABLE ── */
+  .search-input{width:100%;background:var(--card);border:2px solid var(--border);border-radius:9px;padding:11px 15px;color:var(--text);font-family:'Nunito',sans-serif;font-size:.95rem;margin-bottom:14px;outline:none;transition:border-color .2s;}
+  .search-input:focus{border-color:var(--accent);}
+  .ref-scroll{max-height:520px;overflow-y:auto;border-radius:11px;border:1px solid var(--border);}
+  .ref-table{width:100%;border-collapse:collapse;font-size:.83rem;}
+  .ref-table th{background:var(--accent2);color:var(--text);padding:9px 13px;text-align:left;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;position:sticky;top:0;z-index:1;}
+  .ref-table td{padding:8px 13px;border-bottom:1px solid var(--border);}
+  .ref-table tr:hover td{background:rgba(255,255,255,.02);}
+  .ref-table td:first-child{font-family:'Fira Mono',monospace;font-weight:700;color:var(--yellow);}
+  .ref-table td:nth-child(2),.ref-table td:nth-child(3){font-family:'Fira Mono',monospace;}
+  .ref-table td:last-child{color:var(--muted);}
+
+  /* STATUS ICON in ref table */
+  .ref-table td.status-cell{text-align:center;font-size:1rem;width:36px;}
+  .status-icon-correct{color:var(--green);}
+  .status-icon-wrong{color:var(--accent);}
+  .status-icon-unseen{color:var(--border);}
+
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>English <span>Verb</span> Trainer 🇬🇧</h1>
+  <p>Direkt aus dem Buch · Past Simple &amp; Participle · If Clauses</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('verbs',this)">📝 Verben üben</button>
+  <button class="tab-btn" onclick="switchTab('ifclauses',this)">🔀 If Clauses</button>
+  <button class="tab-btn" onclick="switchTab('reference',this)">📖 Alle Verben</button>
+</div>
+
+<!-- VERBS -->
+<div class="section active" id="tab-verbs">
+  <div class="stats-bar">
+    <div class="stat-chip">Verb <span id="v-cur">1</span> / <span id="v-tot">—</span></div>
+    <div class="stat-chip g">✓ <span id="v-correct">0</span></div>
+    <div class="stat-chip"><span id="v-wrong" style="color:var(--accent)">0</span> ✗</div>
+    <div class="stat-chip y">🔥 <span id="v-streak">0</span></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="v-progress" style="width:0%"></div></div>
+  <div class="mode-selector">
+    <button class="mode-btn active" id="mode-both" onclick="setMode('both')">Beide Formen</button>
+    <button class="mode-btn" id="mode-simple" onclick="setMode('simple')">Nur Past Simple</button>
+    <button class="mode-btn" id="mode-participle" onclick="setMode('participle')">Nur Participle</button>
+    <button class="mode-btn" id="mode-random" onclick="setMode('random')">Zufällig</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkVerb()">✓ Prüfen</button>
+    <button class="btn btn-secondary" onclick="skipVerb()">→ Skip</button>
+    <button class="btn btn-secondary" onclick="showHint()">💡 Tipp</button>
+    <button class="btn btn-secondary" onclick="shuffleVerbs()">🔀 Mischen</button>
+    <button class="btn btn-secondary" onclick="resetVerbs()">↺ Neustart</button>
+  </div>
+  <div class="result-box" id="v-result">
+    <div class="result-score" id="v-result-score"></div>
+    <div class="result-msg" id="v-result-msg"></div><br>
+    <button class="btn btn-primary" onclick="resetVerbs()">↺ Nochmal</button>
+  </div>
+  <div class="verb-card" id="verb-card">
+    <div class="verb-label">Infinitive</div>
+    <div class="verb-base" id="v-base">—</div>
+    <div class="verb-meaning" id="v-meaning">—</div>
+    <div class="input-row">
+      <div class="input-group" id="ig-simple">
+        <label>Past Simple</label>
+        <input class="verb-input" id="v-simple" placeholder="z.B. went" autocomplete="off" onkeydown="if(event.key==='Enter')checkVerb()">
+      </div>
+      <div class="input-group" id="ig-part">
+        <label>Past Participle</label>
+        <input class="verb-input" id="v-participle" placeholder="z.B. gone" autocomplete="off" onkeydown="if(event.key==='Enter')checkVerb()">
+      </div>
+    </div>
+    <div class="feedback-row" id="v-feedback"></div>
+  </div>
+</div>
+
+<!-- IF CLAUSES -->
+<div class="section" id="tab-ifclauses">
+  <div class="grammar-box">
+    <h3>📚 Type 3 If Clauses – Formel</h3>
+    <div class="grammar-row"><span class="grammar-badge type3">Formel</span><div class="grammar-text"><code>If + had + Past Participle, … would have + Past Participle</code></div></div>
+    <div class="grammar-row"><span class="grammar-badge type3">Positiv</span><div class="grammar-text"><code>If she had studied, she would have passed.</code></div></div>
+    <div class="grammar-row"><span class="grammar-badge type3">Negation If</span><div class="grammar-text"><code>If he hadn't forgotten, he would have passed.</code></div></div>
+    <div class="grammar-row"><span class="grammar-badge type3">Negation Hauptsatz</span><div class="grammar-text"><code>If she had come, I wouldn't have been angry.</code></div></div>
+    <div class="grammar-row" style="margin-top:6px"><span class="grammar-badge type3" style="background:rgba(233,69,96,.25)">Bedeutung</span><div class="grammar-text">Etwas in der Vergangenheit ist <b style="color:var(--text)">nicht passiert</b> — es ist eine unreale Situation. "Wenn ich gelernt hätte, hätte ich bestanden."</div></div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-chip">Satz <span id="if-cur">1</span> / <span id="if-tot">30</span></div>
+    <div class="stat-chip g">✓ <span id="if-correct">0</span></div>
+    <div class="stat-chip"><span id="if-wrong" style="color:var(--accent)">0</span> ✗</div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="if-progress" style="width:0%"></div></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkIf()">✓ Prüfen</button>
+    <button class="btn btn-secondary" onclick="nextIf()">→ Nächster</button>
+    <button class="btn btn-secondary" onclick="showIfAnswer()">💡 Antwort</button>
+    <button class="btn btn-secondary" onclick="resetIf()">↺ Neustart</button>
+  </div>
+  <div class="result-box" id="if-result">
+    <div class="result-score" id="if-result-score"></div>
+    <div class="result-msg" id="if-result-msg"></div><br>
+    <button class="btn btn-primary" onclick="resetIf()">↺ Nochmal</button>
+  </div>
+  <div id="if-container"></div>
+</div>
+
+<!-- REFERENCE -->
+<div class="section" id="tab-reference">
+  <input class="search-input" placeholder="🔍 Verb suchen..." id="ref-search" oninput="filterRef()">
+  <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px;">
+    <span style="color:var(--green)">✓</span> = richtig beantwortet &nbsp;
+    <span style="color:var(--accent)">✗</span> = falsch beantwortet &nbsp;
+    <span style="color:var(--border)">○</span> = noch nicht dran gewesen
+  </div>
+  <div class="ref-scroll">
+    <table class="ref-table">
+      <thead><tr><th></th><th>Infinitive</th><th>Past Simple</th><th>Past Participle</th><th>Bedeutung</th></tr></thead>
+      <tbody id="ref-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  VERBEN – EXAKT AUS DEM BUCH (Seiten 266–267)
+// ═══════════════════════════════════════════════
+const VERBS = [
+  ["be","was / were","been","sein"],
+  ["beat","beat","beaten","schlagen"],
+  ["become","became","become","werden"],
+  ["begin","began","begun","beginnen, anfangen"],
+  ["bite","bit","bitten","beißen"],
+  ["bleed","bled","bled","bluten"],
+  ["blow","blew","blown","blasen (Wind)"],
+  ["break","broke","broken","brechen, zerbrechen"],
+  ["breed","bred","bred","züchten"],
+  ["bring","brought","brought","bringen, mitbringen"],
+  ["build","built","built","bauen"],
+  ["burn","burnt","burnt","brennen"],
+  ["buy","bought","bought","kaufen"],
+  ["catch","caught","caught","fangen, erwischen"],
+  ["choose","chose","chosen","wählen, auswählen"],
+  ["come","came","come","kommen, ankommen"],
+  ["cost","cost","cost","kosten"],
+  ["creep","crept","crept","kriechen, schleichen (heranschleichen an)"],
+  ["cut","cut","cut","schneiden"],
+  ["deal with","dealt with","dealt with","umgehen mit, fertigwerden/klarkommen mit"],
+  ["dig","dug","dug","graben"],
+  ["do","did","done","machen, tun"],
+  ["draw","drew","drawn","zeichnen, ziehen"],
+  ["drink","drank","drunk","trinken"],
+  ["drive","drove","driven","(mit dem Auto) fahren, (an)treiben"],
+  ["eat","ate","eaten","essen"],
+  ["fall","fell","fallen","fallen, hinfallen"],
+  ["feed","fed","fed","füttern, ernähren"],
+  ["feel","felt","felt","fühlen, sich fühlen"],
+  ["fight","fought","fought","kämpfen, bekämpfen"],
+  ["find","found","found","finden"],
+  ["fly","flew","flown","fliegen"],
+  ["forget","forgot","forgotten","vergessen"],
+  ["freeze","froze","frozen","(ein)frieren, gefrieren"],
+  ["get","got","got","bekommen, holen, werden"],
+  ["give","gave","given","geben"],
+  ["go","went","gone","gehen, fahren"],
+  ["grow","grew","grown","wachsen, anbauen, (allmählich) werden"],
+  ["hang","hung","hung","hängen"],
+  ["have","had","had","haben"],
+  ["hear","heard","heard","hören"],
+  ["hide","hid","hidden","verstecken, sich verstecken"],
+  ["hit","hit","hit","treffen, schlagen"],
+  ["hold","held","held","halten, abhalten, aufbewahren"],
+  ["hurt","hurt","hurt","verletzen, wehtun"],
+  ["keep","kept","kept","behalten, halten, aufbewahren"],
+  ["know","knew","known","wissen, kennen"],
+  ["lay","laid","laid","legen, hinlegen"],
+  ["lead","led","led","führen, leiten"],
+  ["leave","left","left","verlassen, weggehen"],
+  ["lend","lent","lent","jm. etwas leihen"],
+  ["let","let","let","lassen"],
+  ["lie","lay","lain","liegen"],
+  ["lose","lost","lost","verlieren"],
+  ["make","made","made","machen, herstellen"],
+  ["mean","meant","meant","bedeuten, meinen, sagen wollen"],
+  ["meet","met","met","treffen, kennenlernen"],
+  ["overcome","overcame","overcome","überwinden"],
+  ["overpay","overpaid","overpaid","zu viel Geld ausgeben (für)"],
+  ["overtake","overtook","overtaken","überholen"],
+  ["pay","paid","paid","bezahlen"],
+  ["put","put","put","legen, stellen, setzen"],
+  ["read","read","read","lesen"],
+  ["retell","retold","retold","nacherzählen"],
+  ["ride","rode","ridden","reiten, (Rad) fahren"],
+  ["ring","rang","rung","klingeln, läuten, anrufen"],
+  ["rise","rose","risen","aufsteigen, aufgehen (Sonne)"],
+  ["run","ran","run","laufen, rennen"],
+  ["say","said","said","sagen"],
+  ["see","saw","seen","sehen"],
+  ["sell","sold","sold","verkaufen"],
+  ["send","sent","sent","schicken, senden"],
+  ["set","set","set","setzen, stellen, den Tisch decken"],
+  ["shake","shook","shaken","schütteln, schaukeln (Sonne)"],
+  ["shine","shone","shone","scheinen (Sonne)"],
+  ["shut","shut","shut","schließen, den Mund halten"],
+  ["sing","sang","sung","singen"],
+  ["sink","sank","sunk","sinken, versinken"],
+  ["sit","sat","sat","sitzen, sich setzen"],
+  ["sleep","slept","slept","schlafen"],
+  ["speak","spoke","spoken","sprechen"],
+  ["spend","spent","spent","ausgeben (Geld), verbringen (Zeit)"],
+  ["spread","spread","spread","verbreiten, verbinden (Geld, Krankheit)"],
+  ["stand","stood","stood","stehen"],
+  ["steal","stole","stolen","stehlen"],
+  ["stick","stuck","stuck","stecken, sich (zusammenhalten)"],
+  ["sting","stung","stung","stechen (Insekt)"],
+  ["stink","stank","stunk","stinken"],
+  ["swim","swam","swum","schwimmen"],
+  ["take","took","taken","nehmen, mitnehmen (weg-, hinbringen), dauern (Zeit) brauchen"],
+  ["teach","taught","taught","unterrichten, lehren"],
+  ["tell","told","told","erzählen, berichten"],
+  ["think","thought","thought","denken"],
+  ["throw","threw","thrown","werfen"],
+  ["understand","understood","understood","verstehen"],
+  ["wake","woke","woken","wecken"],
+  ["wear","wore","worn","tragen, anhaben (Kleidung)"],
+  ["win","won","won","gewinnen"],
+  ["write","wrote","written","schreiben"],
+  // Seite 267 (rechte Seite)
+  ["lead to","led to","led to","jm. etwas leihen (führen zu)"],
+  ["leave","left","left","lassen"],
+  ["lend","lent","lent","verleihen"],
+  ["light","lit","lit","anzünden, beleuchten"],
+  ["lose","lost","lost","verlieren"],
+  ["make","made","made","machen"],
+  ["mean","meant","meant","bedeuten"],
+  ["meet","met","met","treffen"],
+  ["overspend","overspent","overspent","zu viel ausgeben"],
+  ["pay","paid","paid","zahlen"],
+  ["put","put","put","stellen"],
+  ["read","read","read","lesen"],
+  ["retold","retold","retold","nacherzählen"],
+  ["ring","rang","rung","läuten"],
+  ["rode","rode","ridden","reiten"],
+  ["say","said","said","sagen"],
+  ["see","saw","seen","sehen"],
+  ["sell","sold","sold","verkaufen"],
+  ["send","sent","sent","schicken"],
+  ["set the table","set the table","set the table","den Tisch decken"],
+  ["shake","shook","shaken","schütteln"],
+  ["shine","shone","shone","scheinen"],
+  ["show","showed","shown","zeigen"],
+  ["shut up","shut up","shut up","den Mund halten"],
+  ["sing","sang","sung","singen"],
+  ["sink","sank","sunk","sinken"],
+  ["sit","sat","sat","sitzen"],
+  ["sleep","slept","slept","schlafen"],
+  ["speak","spoke","spoken","sprechen"],
+  ["speed","sped","sped","rasen, beschleunigen"],
+  ["spend","spent","spent","ausgeben, verbringen"],
+  ["spread","spread","spread","verbreiten"],
+  ["stand","stood","stood","stehen"],
+  ["steal","stole","stolen","stehlen"],
+  ["stick together","stuck together","stuck together","zusammenhalten"],
+  ["sting","stung","stung","stechen"],
+  ["stink","stank","stunk","stinken"],
+  ["swim","swam","swum","schwimmen"],
+  ["take","took","taken","nehmen"],
+  ["teach","taught","taught","lehren"],
+  ["tell","told","told","erzählen"],
+  ["think","thought","thought","denken"],
+  ["throw","threw","thrown","werfen"],
+  ["understand","understood","understood","verstehen"],
+  ["wake","woke","woken","aufwachen"],
+  ["wear","wore","worn","tragen"],
+  ["win","won","won","gewinnen"],
+  ["write","wrote","written","schreiben"],
+];
+
+// Deduplizieren nach Verb[0]
+const seen = new Set();
+const VERBS_CLEAN = VERBS.filter(v => {
+  if(seen.has(v[0])){return false;} seen.add(v[0]); return true;
+});
+
+// ═══════════════════════════════════════════════
+//  STATUS TRACKING: 'unseen' | 'correct' | 'wrong'
+// ═══════════════════════════════════════════════
+const verbStatus = {}; // key = verb[0]
+VERBS_CLEAN.forEach(v => { verbStatus[v[0]] = 'unseen'; });
+
+// ═══════════════════════════════════════════════
+//  IF CLAUSES
+// ═══════════════════════════════════════════════
+const IF_SENTENCES = [
+  {type:3,sentence:"If she ___ (study) harder, she ___ (pass) the test.",blanks:["had studied","would have passed"],hint:"If + had + PP → would have + PP",verb_hints:["study → had studied","pass → would have passed"]},
+  {type:3,sentence:"If he ___ (take) the bus, he ___ (arrive) on time.",blanks:["had taken","would have arrived"],hint:"If + had + PP → would have + PP",verb_hints:["take → had taken","arrive → would have arrived"]},
+  {type:3,sentence:"If they ___ (not forget) the tickets, they ___ (see) the concert.",blanks:["hadn't forgotten","would have seen"],hint:"Negation: hadn't + PP → would have + PP",verb_hints:["not forget → hadn't forgotten","see → would have seen"]},
+  {type:3,sentence:"If I ___ (know) about the party, I ___ (come).",blanks:["had known","would have come"],hint:"If + had + PP → would have + PP",verb_hints:["know → had known","come → would have come"]},
+  {type:3,sentence:"If she ___ (eat) breakfast, she ___ (not feel) so tired.",blanks:["had eaten","wouldn't have felt"],hint:"Negation: wouldn't have + PP",verb_hints:["eat → had eaten","not feel → wouldn't have felt"]},
+  {type:3,sentence:"If we ___ (leave) earlier, we ___ (catch) the flight.",blanks:["had left","would have caught"],hint:"If + had + PP → would have + PP",verb_hints:["leave → had left","catch → would have caught"]},
+  {type:3,sentence:"If he ___ (save) his money, he ___ (buy) a car.",blanks:["had saved","would have bought"],hint:"If + had + PP → would have + PP",verb_hints:["save → had saved","buy → would have bought"]},
+  {type:3,sentence:"If you ___ (tell) me the truth, I ___ (not be) angry.",blanks:["had told","wouldn't have been"],hint:"Negation: wouldn't have + PP",verb_hints:["tell → had told","not be → wouldn't have been"]},
+  {type:3,sentence:"If they ___ (practise) more, they ___ (win) the match.",blanks:["had practised","would have won"],hint:"If + had + PP → would have + PP",verb_hints:["practise → had practised","win → would have won"]},
+  {type:3,sentence:"If I ___ (wake up) earlier, I ___ (not miss) the train.",blanks:["had woken up","wouldn't have missed"],hint:"Negation: wouldn't have + PP",verb_hints:["wake up → had woken up","not miss → wouldn't have missed"]},
+  {type:3,sentence:"If she ___ (bring) her umbrella, she ___ (not get) wet.",blanks:["had brought","wouldn't have got"],hint:"Negation: wouldn't have + PP",verb_hints:["bring → had brought","not get → wouldn't have got"]},
+  {type:3,sentence:"If he ___ (read) the instructions, he ___ (build) it correctly.",blanks:["had read","would have built"],hint:"If + had + PP → would have + PP",verb_hints:["read → had read","build → would have built"]},
+  {type:3,sentence:"If we ___ (choose) a different route, we ___ (avoid) the traffic.",blanks:["had chosen","would have avoided"],hint:"If + had + PP → would have + PP",verb_hints:["choose → had chosen","avoid → would have avoided"]},
+  {type:3,sentence:"If you ___ (speak) more slowly, I ___ (understand) you.",blanks:["had spoken","would have understood"],hint:"If + had + PP → would have + PP",verb_hints:["speak → had spoken","understand → would have understood"]},
+  {type:3,sentence:"If they ___ (not fight), their friendship ___ (not break).",blanks:["hadn't fought","wouldn't have broken"],hint:"Negation auf beiden Seiten",verb_hints:["not fight → hadn't fought","not break → wouldn't have broken"]},
+  {type:3,sentence:"If I ___ (drink) more water, I ___ (not feel) so bad.",blanks:["had drunk","wouldn't have felt"],hint:"Negation: wouldn't have + PP",verb_hints:["drink → had drunk","not feel → wouldn't have felt"]},
+  {type:3,sentence:"If he ___ (write) down the homework, he ___ (not forget) it.",blanks:["had written","wouldn't have forgotten"],hint:"Negation: wouldn't have + PP",verb_hints:["write → had written","not forget → wouldn't have forgotten"]},
+  {type:3,sentence:"If she ___ (win) the competition, she ___ (go) to the finals.",blanks:["had won","would have gone"],hint:"If + had + PP → would have + PP",verb_hints:["win → had won","go → would have gone"]},
+  {type:3,sentence:"If we ___ (not lose) the map, we ___ (find) the way.",blanks:["hadn't lost","would have found"],hint:"Negation: hadn't + PP → would have + PP",verb_hints:["not lose → hadn't lost","find → would have found"]},
+  {type:3,sentence:"If I ___ (see) him, I ___ (give) him your message.",blanks:["had seen","would have given"],hint:"If + had + PP → would have + PP",verb_hints:["see → had seen","give → would have given"]},
+  {type:3,sentence:"If she ___ (not fall asleep), she ___ (hear) the alarm.",blanks:["hadn't fallen asleep","would have heard"],hint:"Negation: hadn't + PP → would have + PP",verb_hints:["not fall → hadn't fallen asleep","hear → would have heard"]},
+  {type:3,sentence:"If he ___ (run) faster, he ___ (catch) the bus.",blanks:["had run","would have caught"],hint:"If + had + PP → would have + PP",verb_hints:["run → had run","catch → would have caught"]},
+  {type:3,sentence:"If they ___ (buy) the tickets earlier, it ___ (be) cheaper.",blanks:["had bought","would have been"],hint:"If + had + PP → would have + PP",verb_hints:["buy → had bought","be → would have been"]},
+  {type:3,sentence:"If I ___ (not spend) all my money, I ___ (afford) the trip.",blanks:["hadn't spent","would have afforded"],hint:"Negation: hadn't + PP → would have + PP",verb_hints:["not spend → hadn't spent","afford → would have afforded"]},
+  {type:3,sentence:"If he ___ (think) before speaking, he ___ (not hurt) her feelings.",blanks:["had thought","wouldn't have hurt"],hint:"Negation: wouldn't have + PP",verb_hints:["think → had thought","not hurt → wouldn't have hurt"]},
+  {type:3,sentence:"If she ___ (make) a reservation, she ___ (get) a table.",blanks:["had made","would have got"],hint:"If + had + PP → would have + PP",verb_hints:["make → had made","get → would have got"]},
+  {type:3,sentence:"If we ___ (meet) earlier, we ___ (become) friends sooner.",blanks:["had met","would have become"],hint:"If + had + PP → would have + PP",verb_hints:["meet → had met","become → would have become"]},
+  {type:3,sentence:"If he ___ (not break) the window, his parents ___ (not find out).",blanks:["hadn't broken","wouldn't have found out"],hint:"Negation auf beiden Seiten",verb_hints:["not break → hadn't broken","not find out → wouldn't have found out"]},
+  {type:3,sentence:"If I ___ (sleep) enough, I ___ (do) better on the test.",blanks:["had slept","would have done"],hint:"If + had + PP → would have + PP",verb_hints:["sleep → had slept","do → would have done"]},
+  {type:3,sentence:"If she ___ (send) the email in time, he ___ (receive) the news.",blanks:["had sent","would have received"],hint:"If + had + PP → would have + PP",verb_hints:["send → had sent","receive → would have received"]},
+];
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let verbIdx=0, vCorrect=0, vWrong=0, vStreak=0;
+let verbOrder=[...Array(VERBS_CLEAN.length).keys()];
+let mode='both';
+let ifIdx=0,ifCorrect=0,ifWrong=0;
+let hintShown=false;
+
+// ═══════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════
+function switchTab(t,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  btn.classList.add('active');
+  if(t==='reference')buildRef();
+  if(t==='ifclauses')renderIf();
+}
+
+// ═══════════════════════════════════════════════
+//  VERB QUIZ
+// ═══════════════════════════════════════════════
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('mode-'+m).classList.add('active');
+  renderVerb();
+}
+
+function renderVerb(){
+  document.getElementById('v-tot').textContent=VERBS_CLEAN.length;
+  if(verbIdx>=VERBS_CLEAN.length){showVerbResult();return;}
+  const v=VERBS_CLEAN[verbOrder[verbIdx]];
+  document.getElementById('v-base').textContent=v[0];
+  document.getElementById('v-meaning').textContent='🇩🇪 '+v[3];
+  document.getElementById('v-feedback').innerHTML='';
+  hintShown=false;
+  const si=document.getElementById('v-simple');
+  const pi=document.getElementById('v-participle');
+  si.value='';pi.value='';
+  si.className='verb-input';pi.className='verb-input';
+  si.disabled=false;pi.disabled=false;
+  const m=mode==='random'?(Math.random()>.5?'simple':'participle'):mode;
+  document.getElementById('ig-simple').style.display=(m==='participle')?'none':'';
+  document.getElementById('ig-part').style.display=(m==='simple')?'none':'';
+  setTimeout(()=>{(m==='participle'?pi:si).focus();},50);
+  document.getElementById('v-cur').textContent=verbIdx+1;
+  document.getElementById('v-progress').style.width=(verbIdx/VERBS_CLEAN.length*100)+'%';
+  document.getElementById('v-result').classList.remove('show');
+  document.getElementById('verb-card').style.display='';
+}
+
+function checkVerb(){
+  const v=VERBS_CLEAN[verbOrder[verbIdx]];
+  const si=document.getElementById('v-simple');
+  const pi=document.getElementById('v-participle');
+  const fb=document.getElementById('v-feedback');
+  fb.innerHTML='';
+  let allOk=true;
+
+  function chk(inp,correct,label){
+    if(inp.closest('.input-group').style.display==='none')return;
+    const ok=correct.toLowerCase().split('/').map(s=>s.trim());
+    const val=inp.value.trim().toLowerCase();
+    if(!val)return;
+    if(ok.some(a=>a===val)){inp.className='verb-input correct';}
+    else{inp.className='verb-input wrong';allOk=false;
+      const d=document.createElement('div');d.className='answer-reveal';
+      d.textContent=label+': '+correct;fb.appendChild(d);}
+    inp.disabled=true;
+  }
+  chk(si,v[1],'Past Simple');
+  chk(pi,v[2],'Past Participle');
+
+  const hasSimple=document.getElementById('ig-simple').style.display!=='none';
+  const hasPart=document.getElementById('ig-part').style.display!=='none';
+  if(hasSimple&&!si.value.trim())return;
+  if(hasPart&&!pi.value.trim())return;
+
+  // Update status
+  if(verbStatus[v[0]]==='unseen'||verbStatus[v[0]]==='wrong'){
+    verbStatus[v[0]]=allOk?'correct':'wrong';
+  }
+
+  if(allOk){
+    vCorrect++;vStreak++;
+    document.getElementById('v-correct').textContent=vCorrect;
+    document.getElementById('v-streak').textContent=vStreak;
+    setTimeout(()=>{verbIdx++;renderVerb();},800);
+  }else{
+    vWrong++;vStreak=0;
+    document.getElementById('v-wrong').textContent=vWrong;
+    document.getElementById('v-streak').textContent=vStreak;
+    setTimeout(()=>{verbIdx++;renderVerb();},2200);
+  }
+}
+
+function skipVerb(){verbIdx++;renderVerb();}
+
+function showHint(){
+  if(hintShown)return;
+  const v=VERBS_CLEAN[verbOrder[verbIdx]];
+  const fb=document.getElementById('v-feedback');
+  const h=document.createElement('div');h.className='answer-reveal';
+  h.textContent='💡 '+v[0].charAt(0).toUpperCase()+v[0].slice(1)+' → '+v[1].charAt(0)+'...';
+  fb.appendChild(h);hintShown=true;
+}
+
+function shuffleVerbs(){
+  verbOrder=verbOrder.sort(()=>Math.random()-.5);
+  verbIdx=0;vCorrect=0;vWrong=0;vStreak=0;
+  updateVStats();renderVerb();
+}
+
+function resetVerbs(){
+  verbOrder=[...Array(VERBS_CLEAN.length).keys()];
+  verbIdx=0;vCorrect=0;vWrong=0;vStreak=0;
+  VERBS_CLEAN.forEach(v=>{verbStatus[v[0]]='unseen';});
+  updateVStats();renderVerb();
+}
+
+function updateVStats(){
+  document.getElementById('v-correct').textContent=vCorrect;
+  document.getElementById('v-wrong').textContent=vWrong;
+  document.getElementById('v-streak').textContent=vStreak;
+}
+
+function showVerbResult(){
+  const total=vCorrect+vWrong;
+  const pct=total?Math.round(vCorrect/total*100):0;
+  document.getElementById('v-result-score').textContent=pct+'%';
+  const msg=pct>=90?'🏆 Perfekt! Klausur kein Problem!':pct>=70?'👍 Gut! Noch ein Durchgang.':'💪 Weitermachen!';
+  document.getElementById('v-result-msg').textContent=vCorrect+' von '+total+' richtig. '+msg;
+  document.getElementById('v-result').classList.add('show');
+  document.getElementById('verb-card').style.display='none';
+}
+
+// ═══════════════════════════════════════════════
+//  IF CLAUSES
+// ═══════════════════════════════════════════════
+function renderIf(){
+  const c=document.getElementById('if-container');c.innerHTML='';
+  if(ifIdx>=IF_SENTENCES.length){showIfResult();return;}
+  const s=IF_SENTENCES[ifIdx];
+  const card=document.createElement('div');card.className='if-card';
+  const tl=['Type 0 – Allgemein','Type 1 – Reale Zukunft','Type 2 – Hypothetisch','Type 3 – Vergangenheit'];
+  const b=document.createElement('div');b.className='if-type-badge type'+s.type;b.textContent=tl[s.type];
+  card.appendChild(b);
+  const parts=s.sentence.split('___');
+  const sent=document.createElement('div');sent.className='if-sentence';
+  parts.forEach((p,i)=>{
+    sent.appendChild(document.createTextNode(p));
+    if(i<s.blanks.length){
+      const inp=document.createElement('input');inp.className='blank-input';
+      inp.id='blank-'+i;inp.placeholder='...';inp.setAttribute('data-answer',s.blanks[i]);
+      inp.autocomplete='off';inp.addEventListener('keydown',e=>{if(e.key==='Enter')checkIf();});
+      sent.appendChild(inp);
+    }
+  });
+  card.appendChild(sent);
+  const hd=document.createElement('div');hd.className='if-hint';hd.textContent='💡 '+s.hint;card.appendChild(hd);
+  s.verb_hints.forEach(vh=>{
+    const vd=document.createElement('div');vd.className='if-hint';
+    vd.style.cssText='font-family:"Fira Mono",monospace;color:var(--yellow);';vd.textContent='📌 '+vh;card.appendChild(vd);
+  });
+  const ad=document.createElement('div');ad.className='if-answer-reveal';ad.id='if-ans';
+  ad.textContent='✅ Lösung: '+s.blanks.join(' | ');card.appendChild(ad);
+  c.appendChild(card);
+  document.getElementById('if-cur').textContent=ifIdx+1;
+  document.getElementById('if-result').classList.remove('show');
+  document.getElementById('if-progress').style.width=(ifIdx/IF_SENTENCES.length*100)+'%';
+  setTimeout(()=>{const f=document.getElementById('blank-0');if(f)f.focus();},50);
+}
+
+function checkIf(){
+  const s=IF_SENTENCES[ifIdx];let allOk=true;
+  s.blanks.forEach((ans,i)=>{
+    const inp=document.getElementById('blank-'+i);if(!inp)return;
+    const val=inp.value.trim().toLowerCase();
+    const ok=ans.toLowerCase().split('/').map(a=>a.trim());
+    if(ok.some(a=>a===val)){inp.className='blank-input correct';}
+    else{inp.className='blank-input wrong';allOk=false;}
+    inp.disabled=true;
+  });
+  document.getElementById('if-ans').style.display='block';
+  if(allOk){ifCorrect++;document.getElementById('if-correct').textContent=ifCorrect;
+    setTimeout(()=>{ifIdx++;if(ifIdx>=IF_SENTENCES.length)showIfResult();else renderIf();},1200);
+  }else{ifWrong++;document.getElementById('if-wrong').textContent=ifWrong;
+    setTimeout(()=>{ifIdx++;if(ifIdx>=IF_SENTENCES.length)showIfResult();else renderIf();},2500);}
+}
+
+function nextIf(){ifIdx++;if(ifIdx>=IF_SENTENCES.length)showIfResult();else renderIf();}
+function showIfAnswer(){document.getElementById('if-ans').style.display='block';}
+function resetIf(){
+  ifIdx=0;ifCorrect=0;ifWrong=0;
+  document.getElementById('if-correct').textContent=0;
+  document.getElementById('if-wrong').textContent=0;
+  document.getElementById('if-result').classList.remove('show');
+  renderIf();
+}
+function showIfResult(){
+  const pct=Math.round(ifCorrect/IF_SENTENCES.length*100);
+  document.getElementById('if-result-score').textContent=pct+'%';
+  const msg=pct>=90?'🏆 Perfekt!':pct>=60?'👍 Gut gemacht!':'💪 Nochmal versuchen!';
+  document.getElementById('if-result-msg').textContent=ifCorrect+' von '+IF_SENTENCES.length+' richtig. '+msg;
+  document.getElementById('if-result').classList.add('show');
+  document.getElementById('if-container').innerHTML='';
+}
+
+// ═══════════════════════════════════════════════
+//  REFERENCE TABLE WITH STATUS ICONS
+// ═══════════════════════════════════════════════
+function buildRef(){filterRef();}
+
+function filterRef(){
+  const q=(document.getElementById('ref-search')?.value||'').toLowerCase();
+  const tbody=document.getElementById('ref-body');
+  tbody.innerHTML='';
+  VERBS_CLEAN
+    .filter(v=>!q||v[0].includes(q)||v[1].includes(q)||v[2].includes(q)||v[3].toLowerCase().includes(q))
+    .forEach(v=>{
+      const st=verbStatus[v[0]]||'unseen';
+      let icon,cls;
+      if(st==='correct'){icon='✓';cls='status-icon-correct';}
+      else if(st==='wrong'){icon='✗';cls='status-icon-wrong';}
+      else{icon='○';cls='status-icon-unseen';}
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td class="status-cell"><span class="${cls}">${icon}</span></td>
+        <td>${v[0]}</td><td>${v[1]}</td><td>${v[2]}</td>
+        <td>${v[3]}</td>`;
+      tbody.appendChild(tr);
+    });
+}
+
+// INIT
+renderVerb();
+</script>
+</body>
+</html>
